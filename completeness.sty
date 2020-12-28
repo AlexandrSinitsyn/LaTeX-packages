@@ -24,6 +24,9 @@
 %%       - The third - prints the completeness of your work on the screen
 %%
 %%
+%% Also you could use '\doneparts' -- list of all done parts
+%%
+%%
 %%   (c) Alex Sin 2020
 %%
 %%
@@ -41,7 +44,6 @@
 
 
 \RequirePackage{xifthen}
-\RequirePackage{pgffor}
 \RequirePackage[nomessages]{fp}
 
 
@@ -63,6 +65,9 @@ You should use it just once at the end of your work.
 \edef\@authors@list{\@empty}
 \gdef\@author@names@found{\@empty}
 
+\let\@doneparts\empty
+\def\doneparts{\@doneparts}
+
 \newcounter{@tmp@foreach@counter@completeness@}
 \newcommand{\writtenby}[2][]{%
     \def\@@@name{#2}
@@ -74,6 +79,8 @@ You should use it just once at the end of your work.
     \ifnum\pdfstrcmp{\@@@name}{???}=0\relax\else{%
     \stepcounter{@countofcomplete}
     \setcounter{@tmp@foreach@counter@completeness@}{0}
+    \let\@done@tickets@tmp\@doneparts
+    \ifx\@done@tickets@tmp\empty\xdef\@doneparts{\@@part@name@@value}\else\xdef\@doneparts{\@done@tickets@tmp, \@@part@name@@value}\fi
     \let\@found@\empty
     \foreach \name@ in \@author@names@found{%
         \ifnum\pdfstrcmp{\name@}{\@@@name}=0 \xdef\@found@{\the@tmp@foreach@counter@completeness@}\else\relax\fi
