@@ -1,0 +1,119 @@
+%%
+%%         Provided by Alex Sin
+%%         27 december 2020
+%%
+%%
+%%
+%% Package options:
+%%       exam
+%%       book
+%%       article
+%%       'default'
+%%
+%%
+%%
+%% There are two different commands for the users:
+%%
+%%       \writtenby[<part-number>]{<name>}
+%%       \showcompleteness
+%%
+%%
+%%       - The first command is used to declare that 'this' part was made by a specific user
+%%       - While the second - prints the completeness of your work on the screen
+%%
+%%
+%%   (c) Alex Sin 2020
+%%
+%%
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{completeness}[2020/12/27 Package to track the completness]
+
+
+\def\@@@part@name{ticket}
+\DeclareOption{exam}{\xdef\@@@part@name{ticket}}
+\DeclareOption{book}{\xdef\@@@part@name{chapter}}
+\DeclareOption{article}{\xdef\@@@part@name{part}}
+\DeclareOption*{\PackageWarning{Completeness package}{Unknown ‘\CurrentOption’}}
+\ProcessOptions\relax
+
+
+\RequirePackage{xifthen}
+\RequirePackage{pgffor}
+\RequirePackage[nomessages]{fp}
+
+
+\def\completeness@err@#1{\errmessage{Completeness-pckg error: #1}}
+\newhelp\defaulthelp@{An error might have occured due to double-use of the command ^^J
+'showcompleteness' ^^J
+You should use it just once at the end of your work.
+}
+\def\err@{\errhelp\defaulthelp@\completeness@err@}
+
+
+\def\@tcof{0}
+\newcommand{\totalcountoftickets}[1]{%
+    \def\@tcof{#1}
+}
+\newcounter{@countofcomplete}
+\setcounter{@countofcomplete}{0}
+
+\edef\@authors@list{\@empty}
+\gdef\@author@names@found{\@empty}
+
+\newcounter{@tmp@foreach@counter@completeness@}
+\newcommand{\writtenby}[2][]{%
+    \def\@@@name{#2}
+    \def\@arg{#1}
+    \def\@@part@name@@value{\ifx\@arg\empty\the@countofcomplete\else#1\fi}
+    
+    \ifnum\pdfstrcmp{\@@@name}{?}=0\relax\else
+    \ifnum\pdfstrcmp{\@@@name}{??}=0\relax\else
+    \ifnum\pdfstrcmp{\@@@name}{???}=0\relax\else{%
+    \stepcounter{@countofcomplete}
+    \setcounter{@tmp@foreach@counter@completeness@}{0}
+    \let\@found@\empty
+    \foreach \name@ in \@author@names@found{%
+        \ifnum\pdfstrcmp{\name@}{\@@@name}=0 \xdef\@found@{\the@tmp@foreach@counter@completeness@}\else\relax\fi
+        \stepcounter{@tmp@foreach@counter@completeness@}
+    }
+    \ifx\@found@\@empty{%
+    \edef\@@@tmp{\@author@names@found}
+    \xdef\@author@names@found{\@@@tmp, \@@@name}
+    \edef\@@@tmp{\@authors@list}
+    \edef\@upd{\@@@name~:~\@@@part@name~---~\@@part@name@@value}
+    \ifnum\the@countofcomplete=1\global\edef\@authors@list{\@upd}\else\global\edef\@authors@list{\@@@tmp, \@upd}\fi
+    }\else{%
+    \setcounter{@tmp@foreach@counter@completeness@}{1}
+    \edef\@@@upd{\@authors@list}
+    \foreach \name@ in \@authors@list{%
+        \edef\@tmp{\@@@upd}
+        \ifnum\the@tmp@foreach@counter@completeness@=\@found@\xdef\@@@upd{\@tmp; \@@part@name@@value}\else\def\@@@upd{\@tmp, \@name}\fi
+        \stepcounter{@tmp@foreach@counter@completeness@}
+    }
+    \xdef\@authors@list{\@@@upd}
+    }\fi
+    }\fi\fi\fi
+}
+
+\let\@command@used@\empty
+\newcommand{\showcompleteness}{%
+    \phantom{phantom text}\vspace{1.6in}
+    \ifx\@command@used@\empty\xdef\@command@used@{FASLE}\else\err@{Use 'showcompleteness'-command just once}\fi
+    
+    \bfseries\Large
+    \noindent List of authors: \par
+    \foreach \element in \@authors@list{
+        \element\par
+    }
+    \vspace{0.4in}
+    \centering
+    \noindent Completed: \the@countofcomplete \par
+    \noindent Total: \@tcof \par
+    \FPeval{\@percent}{round(((\the@countofcomplete * 100) / \@tcof):2)}
+    \noindent Completeness: \@percent\%
+    \ifnum\the@countofcomplete>\@tcof\err@{Er... How could you completed more that total?!!}\else\relax\fi
+}
+
+
+% The end
