@@ -33,9 +33,9 @@ Example:
 \end{matlog}
 ```
 
-- Use `*` to start next expression;
-** First expression won't ever be itemized
-- Each expression should stay to template of `* expr ?`. Follwed by:
--- `.` to finish the expression;
--- `<axiom's number> /` to say from which axiom was this expression gotten;
--- `MP <first>, <second> /` to set _Modus Ponens_ of two expressions.
+* Use `*` to start next expression;
+  - First expression won't ever be itemized
+* Each expression should stay to template of `* expr ?`. Follwed by:
+  - `.` to finish the expression;
+  - `<axiom's number> /` to say from which axiom was this expression gotten;
+  - `MP <first>, <second> /` to set _Modus Ponens_ of two expressions.
