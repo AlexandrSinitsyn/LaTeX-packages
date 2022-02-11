@@ -1,0 +1,51 @@
+\makeatletter
+
+%%% presettings
+\let\@combine\undefined
+\newcommand{\combine}{\let\@combine\relax}
+
+%% cmds
+\catcode`\|=\active
+\catcode`\!=\active
+\catcode`\&=\active
+\catcode`\V=\active
+\catcode`\>=\active
+\catcode`\*=\active
+
+\setcounter{@matlogcnt}{-1}
+\def* #1?{\noindent\stepcounter{@matlogcnt}\ifnum\the@matlogcnt=0\relax\else\the@matlogcnt)\separator\fi\(#1\)\@lineend}
+\def\@lineend{\@ifnextchar.\@lineend@i\@lineend@ii}
+\def\@lineend@i.{\par}
+\def\@lineend@ii{\@ifnextchar M\@lineend@iii\@lineend@iv}
+\def\@lineend@iii MP #1, #2/{\( \separator | \quad MP\separator(#1), (#2)\)\par}
+\def\@lineend@iv#1/{\( \separator | \quad \text{\ifrus акс\else ax\fi.} \separator (#1)\)\par}
+
+\def\ignore#1{\relax}
+\def|{\@ifnextchar-{\vdash\ignore}\mid}
+
+\def\neginbrackets(#1){\overline{#1)}}
+\def\@negbr{\ifdefined\@combine\neginbrackets(\else{\neg}\fi}
+\def!{\@ifnextchar({\@negbr}{\neg}}
+
+\def>{\rightarrow}
+
+\def&{\separator\&\separator}
+\def V{\vee}
+
+
+%%% alphabet
+% \catcode`a=\active \def a{\alpha}
+% \catcode`b=\active \def b{\beta}
+% \catcode`g=\active \def g{\gamma}
+% \catcode`s=\active \def s{\sigma}
+% \catcode`t=\active \def t{\tau}
+% \let\oldA=A \catcode`A=\active \def A{\oldA}
+% \let\oldB=B \catcode`B=\active \def B{\oldB}
+% \let\oldC=C \catcode`C=\active \def C{\oldC}
+% \catcode`G=\active \def G{\Gamma}
+% \catcode`P=\active \def P{\Pi}
+% \catcode`S=\active \def S{\Sigma}
+% \catcode`Z=\active \def Z{\Zeta}
+\makeatother
+
+\endinput
