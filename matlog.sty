@@ -1,0 +1,51 @@
+%%
+%%         Provided by Alex Sin
+%%         11 february 2022
+%%
+%%
+%%
+%% Package options:
+%%       english
+%%       russian
+%%       'default'
+%%
+%%
+%%
+%% There are two different environments to use:
+%%
+%%       matlog
+%%       matlog*
+%%
+%%
+%%       For negation:
+%%       - The first one puts overline
+%%       - The second -- just the neg sign
+%%
+%%
+%%
+%%   (c) Alex Sin 2022
+%%
+%%
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{matlog}[2022/02/11 Package for writting mathematical logic expressions]
+
+\newif\ifrus
+\DeclareOption{english}{\rusfalse}
+\DeclareOption{russian}{\rustrue}
+\DeclareOption*{\PackageWarning{Matlog package}{Unknown ‘\CurrentOption’}}
+\ProcessOptions\relax
+
+\RequirePackage{amsmath}
+
+
+%%% presettings
+
+\newcounter{@matlogcnt}
+
+\ifdefined\separator\relax\else\xdef\separator{~}\fi
+
+\newenvironment{matlog}{\input{matloglib}}{}
+\newenvironment{matlog*}{\input{matloglib}\combine}{}
+
+% The end
