@@ -1,6 +1,6 @@
 %%
 %%         Provided by Alex Sin
-%%         11 february 2022
+%%         17 february 2022
 %%
 %%
 %%
@@ -11,15 +11,16 @@
 %%
 %%
 %%
-%% There are two different environments to use:
+%% There is only one thing to use:
 %%
-%%       matlog
-%%       matlog*
+%%       ml (environment)
 %%
 %%
-%%       For negation:
-%%       - The first one puts overline
-%%       - The second -- just the neg sign
+%% However, you have three different options to add:
+%%
+%%       'default' - it converts some special latin letters (a, b, g, s, t, G, D, S) to greek letters, so you can not use them in any command names. In this case you should either use other-named commands or enable the 'l' option on the environment
+%%       l - it does not convert latin letters to greek letters, so you are 
+%%       r - this flag switches the negation from 'neg sign' to 'overlining the character'
 %%
 %%
 %%
@@ -28,7 +29,7 @@
 %%
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{matlog}[2022/02/11 Package for writting mathematical logic expressions]
+\ProvidesPackage{matlog}[2022/02/17 Package for writting mathematical logic expressions]
 
 \newif\ifrus
 \DeclareOption{english}{\rusfalse}
@@ -39,13 +40,119 @@
 \RequirePackage{amsmath}
 
 
+\def\mathlogname{Math logic}
+\def\matlogversion{2.2}
+
+
 %%% presettings
 
 \newcounter{@matlogcnt}
 
 \ifdefined\separator\relax\else\xdef\separator{~}\fi
 
-\newenvironment{matlog}{\input{matloglib}}{}
-\newenvironment{matlog*}{\input{matloglib}\combine}{}
+\let\@@@@ode\catcode
+\let\m@ke@@o@her\makeatother
+
+\let\@lph@\alpha
+\let\@e@@\beta
+\let\@@mm@\gamma
+\let\@i@m@\sigma
+\let\@@u\tau
+\let\i@@mm@\Gamma
+\let\i@el@@\Delta
+\let\i@i@m@\Sigma
+
+\newif\ifletters\letterstrue
+\newif\ifcompact\compactfalse
+
+\setcounter{@matlogcnt}{-1}
+\newif\ifmlexpression\mlexpressionfalse
+
+\def\@ml@star{\@ifnextchar/\@ml@star@i\@ml@star@ii}
+\def\@ml@star@i/{\vspace{\baselineskip}}
+\def\@ml@star@ii{\ifmlexpression\star\else\@ml@star@iii\fi}
+\def\@ml@star@iii#1?{\noindent\stepcounter{@matlogcnt}\ifnum\the@matlogcnt=0\hspace{-\parindent}\hspace{-1.3ex}\else\the@matlogcnt)\separator\fi\mlexpressiontrue\(#1\)\@ml@lineend}
+\def\@ml@lineend{\@ifnextchar.\@ml@lineend@i\@ml@lineend@ii}
+\def\@ml@lineend@i.{\mlexpressionfalse\par}
+\def\@ml@lineend@ii{\@ifnextchar M\@ml@lineend@iii\@ml@lineend@iv}
+\def\@ml@lineend@iii MP #1, #2/{\(\separator\hfill\quad\text{MP}\separator(#1),(#2)\)\@ml@lineend@i.}
+\def\@ml@lineend@iv#1/{\(\separator\hfill\quad\text{\ifrus акс\else ax\fi.}\separator(#1)\)\@ml@lineend@i.}
+
+\def\@ml@ignore#1{\relax}
+\def\@ml@mid{\@ifnextchar-\@ml@mid@i\@ml@mid@ii}
+\def\@ml@mid@i{\vdash\@ml@ignore}
+\def\@ml@mid@ii{\@ifnextchar={\models\@ml@ignore}\@ml@mid@iii}
+\def\@ml@mid@iii{\mid}
+
+\def\@ml@fact{\@ifnextchar-{\ifdefined\nvdash\nvdash\else\not\empty\kern2pt\vdash\fi\@ml@ignore}\@ml@neg@}
+\def\@ml@neg@{\@ifnextchar({\@ml@negbr}{\ifcompact\@ml@negterm\else\neg\fi}}
+\def\@ml@negbr{\ifcompact\@ml@neginbrackets(\else\neg\fi}
+\def\@ml@negterm#1 {\overline{#1}}
+\def\@ml@neginbrackets(#1){\overline{#1)}}
+
+%%% FIXME
+% move to tmp file also
+\def\@ml@gt{\@ifnextchar>\@ml@@ggt\@ml@@gt}
+\def\@ml@@gt{\to}
+\def\@ml@@ggt{\ifdefined\twoheadrightarrow\twoheadrightarrow\else\to\hspace{-1.5ex}\to\fi\@ml@ignore}
+
+\def\@ml@and{\separator\&\separator}
+\def\@ml@v{\lor}
+
+\def\cnd{\@ifnextchar[\@ml@cnd@i\@ml@cnd@ii}
+\def\@ml@cnd@i[#1]{\,\empty_{\mathtt [#1]}\!\,}
+\def\@ml@cnd@ii#1{\!\empty_{\text{#1}}~}
+
+
+\edef\@ml@r{r}
+\edef\@ml@l{l}
+%%% FIXME
+% Not `l', but letter sequence
+
+%%% ADD
+% int, o
+
+\def\ml{\@ifnextchar[\ml@i\ml@ii}
+\def\ml@i[#1]{
+    \def\arg{#1}
+    \ifx\@ml@l\arg\lettersfalse\else\ifx\@ml@r\arg\compacttrue\fi\fi\ml}
+\def\ml@ii{\bgroup
+    \newwrite\matlogtmpfile
+    \immediate\openout\matlogtmpfile=\jobname-matlog-tmp
+    
+    \immediate\write\matlogtmpfile{%
+        %%% catcodes
+        \string\catcode`*=13
+        \string\catcode`|=13
+        \string\catcode`!=13
+        \string\catcode`>=13
+        \string\catcode`&=13
+        \string\catcode`V=13
+        
+        %%% chars redefining
+        \string\def *\string{\string\@ml@star\string}
+        \string\def |\string{\string\@ml@mid\string}
+        \string\def !\string{\string\@ml@fact\string}
+        \string\def >\string{\string\@ml@gt\string}
+        \string\def &\string{\string\@ml@and\string}
+        \string\def V\string{\string\@ml@v\string}
+        \string\def\string\[\string{\string\ifdefined\string\llbracket\string\llbracket\string\else[\string\![\string\fi\string}
+        \string\def\string\]\string{\string\ifdefined\string\rrbracket\string\rrbracket\string\else]\string\!]\string\fi\string}
+        
+        %%% alphabet
+        \string\ifletters
+        \string\@@@@ode`a=13 \string\def a\string{\string\@lph@\string}
+        \string\@@@@ode`b=13 \string\def b\string{\string\@e@@\string}
+        \string\@@@@ode`g=13 \string\def g\string{\string\@@mm@\string}
+        \string\@@@@ode`s=13 \string\def s\string{\string\@i@m@\string}
+        \string\@@@@ode`t=13 \string\def t\string{\string\@@u\string}
+        \string\@@@@ode`G=13 \string\def G\string{\string\i@@mm@\string}
+        \string\@@@@ode`D=13 \string\def D\string{\string\i@el@@\string}
+        \string\@@@@ode`S=13 \string\def S\string{\string\i@i@m@\string}
+        \string\fi
+    }
+    \immediate\closeout\matlogtmpfile
+    \makeatletter\input{\jobname-matlog-tmp}}
+\def\endml{\m@ke@@o@her\egroup\letterstrue\compactfalse\setcounter{@matlogcnt}{-1}}
 
 % The end
